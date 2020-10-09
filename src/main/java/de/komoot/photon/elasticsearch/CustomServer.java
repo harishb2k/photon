@@ -30,18 +30,20 @@ public class CustomServer {
     private final String[] languages;
     private String clusterName;
     private String transportAddresses;
-
+    private final String indexName;
 
     public CustomServer(CommandLineArgs args) {
         this.clusterName = args.getCluster();
         this.languages = args.getLanguages().split(",");
         this.transportAddresses = args.getTransportAddresses();
+        this.indexName = SingletonConfig.indexName;
     }
 
     public CustomServer(String clusterName, String languages, String transportAddresses) {
         this.clusterName = clusterName;
         this.languages = languages.split(",");
         this.transportAddresses = transportAddresses;
+        this.indexName = SingletonConfig.indexName;
     }
 
     public CustomServer start() {
@@ -67,7 +69,10 @@ public class CustomServer {
             } else {
                 esClient = new PreBuiltTransportClient(sBuilder.build())
                         .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
+                log.info("(localhost ES) started elastic search client connected to " + "localhost");
             }
+
+            log.info("Index used = " + indexName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -80,7 +85,7 @@ public class CustomServer {
 
     public void deleteIndex() {
         try {
-            this.getClient().admin().indices().prepareDelete("photon").execute().actionGet();
+            this.getClient().admin().indices().prepareDelete(indexName).execute().actionGet();
         } catch (IndexNotFoundException e) {
             // ignore
         }
@@ -115,8 +120,8 @@ public class CustomServer {
         if (shards != null) {
             settings.put("index", new JSONObject("{ \"number_of_shards\":" + shards + " }"));
         }
-        client.admin().indices().prepareCreate("photon").setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
-        client.admin().indices().preparePutMapping("photon").setType("place").setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
+        client.admin().indices().prepareCreate(indexName).setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
+        client.admin().indices().preparePutMapping(indexName).setType("place").setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
         log.info("mapping created: " + mappingsJSON.toString());
     }
 

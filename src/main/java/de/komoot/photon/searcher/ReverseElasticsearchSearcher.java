@@ -1,6 +1,7 @@
 package de.komoot.photon.searcher;
 
 import com.vividsolutions.jts.geom.Point;
+import de.komoot.photon.elasticsearch.SingletonConfig;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -26,7 +27,7 @@ public class ReverseElasticsearchSearcher implements ElasticsearchReverseSearche
                                  Boolean locationDistanceSort) {
         TimeValue timeout = TimeValue.timeValueSeconds(7);
 
-        SearchRequestBuilder builder = client.prepareSearch("photon").setSearchType(SearchType.QUERY_THEN_FETCH)
+        SearchRequestBuilder builder = client.prepareSearch(SingletonConfig.indexName).setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(queryBuilder).setSize(limit).setTimeout(timeout);
 
         if (locationDistanceSort)

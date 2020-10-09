@@ -53,6 +53,8 @@ public class Server {
 
     private Integer shards = null;
 
+    private final String indexName;
+
     protected static class MyNode extends Node {
         public MyNode(Settings preparedSettings, Collection<Class<? extends Plugin>> classpathPlugins) {
             // FIXME - Above code did not compile for ES 7 - So commented for now -> NOTE - if we use external ES then this code this not needed
@@ -78,6 +80,7 @@ public class Server {
         this.clusterName = clusterName;
         this.languages = languages.split(",");
         this.transportAddresses = transportAddresses;
+        this.indexName = SingletonConfig.indexName;
     }
 
     public Server start() {
@@ -200,16 +203,16 @@ public class Server {
         if (shards != null) {
             settings.put("index", new JSONObject("{ \"number_of_shards\":" + shards + " }"));
         }
-        client.admin().indices().prepareCreate("photon").setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
+        client.admin().indices().prepareCreate(indexName).setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
         ;
         System.out.println(mappingsJSON.toString());
-        client.admin().indices().preparePutMapping("photon").setType("place").setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
+        client.admin().indices().preparePutMapping(indexName).setType("place").setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
         log.info("mapping created: " + mappingsJSON.toString());
     }
 
     public void deleteIndex() {
         try {
-            this.getClient().admin().indices().prepareDelete("photon").execute().actionGet();
+            this.getClient().admin().indices().prepareDelete(indexName).execute().actionGet();
         } catch (IndexNotFoundException e) {
             // ignore
         }

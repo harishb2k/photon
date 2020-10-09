@@ -5,6 +5,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import de.komoot.photon.elasticsearch.CustomServer;
 import de.komoot.photon.elasticsearch.Server;
+import de.komoot.photon.elasticsearch.SingletonConfig;
 import de.komoot.photon.nominatim.NominatimConnector;
 import de.komoot.photon.nominatim.NominatimUpdater;
 import de.komoot.photon.utils.CorsFilter;
@@ -51,6 +52,9 @@ public class App {
             startJsonDump(args);
             return;
         }
+
+        // First thing first - we must setup configs
+        SingletonConfig.init(args);
 
         // FIXME - (we use external ES so this if is true - we have CustomServer now)
         if (true) {

@@ -20,7 +20,7 @@ import java.io.IOException;
 public class Importer implements de.komoot.photon.Importer {
     private int documentCount = 0;
 
-    private final String indexName = "photon";
+    private final String indexName;
     private final String indexType = "place";
     private final Client esClient;
     private BulkRequestBuilder bulkRequest;
@@ -30,6 +30,7 @@ public class Importer implements de.komoot.photon.Importer {
         this.esClient = esClient;
         this.bulkRequest = esClient.prepareBulk();
         this.languages = languages.split(",");
+        this.indexName = SingletonConfig.indexName;
     }
 
     @Override

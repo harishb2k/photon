@@ -14,6 +14,9 @@ public class CommandLineArgs {
     @Parameter(names = "-cluster", description = "name of elasticsearch cluster to put the server into (default is 'photon')")
     private String cluster = "photon";
 
+    @Parameter(names = "-index", description = "name of elasticsearch index (default is 'photon')")
+    private String index = "photon";
+
     @Parameter(names = "-transport-addresses", description = "the comma separated addresses of external elasticsearch nodes where the client can connect to (default is an empty string which forces an internal node to start)")
     private String transportAddresses = "";
 

@@ -97,9 +97,56 @@ java -jar photon-*.jar -nominatim-import -host localhost -port 5432 -database no
 Other option:
 -index -> name of elasticsearch index, default is 'photon'
 -recreate-index -> delete index and all documents, creates a new and empty photon index
+-transport-addresses -> external elastic search url e.g. "localhost" or "my_es_cluster_ip"
 ```
 
 The import of worldwide data set will take some hours/days, SSD/NVME disks are recommended to accelerate nominatim queries.
+
+#### How you should do it? ####
+
+Import data using a temporary index name e.g. "photon_test_1" 
+```bash
+java -jar target/photon-0.3.4.jar -nominatim-import -host localhost -port 5432 -database nominatim -user nominatim -password pass -languages es,fr,en -cluster elasticsearch_brew -transport-addresses localhost -index photon_test_1
+```
+
+Create a alias which you client will use 
+```bash
+curl --location --request POST 'http://localhost:9200/_aliases' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "actions" : [
+       { "add" : { "index" : "photon_test_1", "alias" : "photon_client_index" } }    
+  ]
+}'
+```
+
+Run Photon with the client index e.g. "photon_client_index" in this case
+```bash
+java -jar target/photon-0.3.4.jar -cluster elasticsearch_brew -transport-addresses localhost -index photon_client_index
+```
+
+When you have new data then import it on ES with new  temporary index name e.g. "photon_test_2".
+You will continue to serve with data from "photon_test_1" 
+```bash
+java -jar target/photon-0.3.4.jar -nominatim-import -host localhost -port 5432 -database nominatim -user nominatim -password pass -languages es,fr,en -cluster elasticsearch_brew -transport-addresses localhost -index photon_test_2
+```
+
+Point "photon_client_index" to this new index when new index is ready
+```bash
+curl --location --request POST 'http://localhost:9200/_aliases' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "actions" : [
+    { "remove" : { "index" : "photon_test_1", "alias" : "photon_client_index" } },
+    { "add" : { "index" : "photon_test_2", "alias" : "photon_client_index" } }
+  ]
+}'
+```
+
+Drop old index to save space
+```bash
+curl --location --request DELETE 'http://localhost:9200/photon_test_1'
+```
 
 #### Updating from OSM via Nominatim
 
