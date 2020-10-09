@@ -92,7 +92,11 @@ ALTER USER nominatim WITH ENCRYPTED PASSWORD 'mysecretpassword';
 ```
 Import the data to photon:
 ```bash
-java -jar photon-*.jar -nominatim-import -host localhost -port 5432 -database nominatim -user nominatim -password mysecretpassword -languages es,fr
+java -jar photon-*.jar -nominatim-import -host localhost -port 5432 -database nominatim -user nominatim -password mysecretpassword -languages es,fr -transport-addresses localhost
+
+Other option:
+-index -> name of elasticsearch index, default is 'photon'
+-recreate-index -> delete index and all documents, creates a new and empty photon index
 ```
 
 The import of worldwide data set will take some hours/days, SSD/NVME disks are recommended to accelerate nominatim queries.

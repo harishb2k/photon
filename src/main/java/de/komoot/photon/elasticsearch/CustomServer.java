@@ -19,8 +19,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class CustomServer {
@@ -44,14 +45,30 @@ public class CustomServer {
     }
 
     public CustomServer start() {
+        Settings.Builder sBuilder = Settings.builder();
+        sBuilder.put("cluster.name", clusterName);
+
         try {
-            Settings.Builder sBuilder = Settings.builder();
-            sBuilder.put("cluster.name", clusterName);
-            // sBuilder.put("transport.type", "netty4").put("http.type", "netty4").put("http.enabled", "true");
-            esClient = new PreBuiltTransportClient(sBuilder.build())
-                    // elasticsearch_brew
-                    .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
-        } catch (UnknownHostException e) {
+            if (transportAddresses != null && !transportAddresses.isEmpty()) {
+                TransportClient trClient = new PreBuiltTransportClient(sBuilder.build());
+                List<String> addresses = Arrays.asList(transportAddresses.split(","));
+                for (String tAddr : addresses) {
+                    int index = tAddr.indexOf(":");
+                    if (index >= 0) {
+                        int port = Integer.parseInt(tAddr.substring(index + 1));
+                        String addrStr = tAddr.substring(0, index);
+                        trClient.addTransportAddress(new TransportAddress(InetAddress.getByName(addrStr), port));
+                    } else {
+                        trClient.addTransportAddress(new TransportAddress(InetAddress.getByName(tAddr), 9300));
+                    }
+                }
+                esClient = trClient;
+                log.info("(external ES) started elastic search client connected to " + addresses);
+            } else {
+                esClient = new PreBuiltTransportClient(sBuilder.build())
+                        .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
+            }
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return this;
