@@ -71,6 +71,11 @@ photon uses [maven](https://maven.apache.org/) for building. To build the packag
 
 ```
 mvn package
+
+NOTE - if you need to run test cases then run elastic search 7.9.1 locally
+ - it must have cluster name = elasticsearch_brew
+        OR edit "ESBaseTester.java" var clusterName with your cluster name 
+
 ```
 
 ### Customized Search Data

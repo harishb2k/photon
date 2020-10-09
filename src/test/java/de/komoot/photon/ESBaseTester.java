@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import de.komoot.photon.elasticsearch.CustomServer;
 import de.komoot.photon.elasticsearch.Importer;
 import de.komoot.photon.elasticsearch.Server;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,10 @@ import java.io.IOException;
 @Slf4j
 public class ESBaseTester {
 
-    public final String clusterName = "photon-test";
+    public final String clusterName = "elasticsearch_brew";
     private final String indexName = "photon";
 
-    private Server server;
+    private CustomServer server;
 
     GeometryFactory FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -76,7 +77,9 @@ public class ESBaseTester {
      * @throws IOException
      */
     public void setUpES() throws IOException {
-        server = new Server(clusterName, new File("./target/es_photon_test").getAbsolutePath(), "en", "").setMaxShards(1).start();
+        // server = new Server(clusterName, new File("./target/es_photon_test").getAbsolutePath(), "en", "").setMaxShards(1).start();
+        server = new CustomServer(clusterName, "en", "");
+        server.start();
         server.recreateIndex();
         refresh();
     }

@@ -30,12 +30,18 @@ public class CustomServer {
     private String clusterName;
     private String transportAddresses;
 
+
     public CustomServer(CommandLineArgs args) {
         this.clusterName = args.getCluster();
         this.languages = args.getLanguages().split(",");
         this.transportAddresses = args.getTransportAddresses();
     }
 
+    public CustomServer(String clusterName, String languages, String transportAddresses) {
+        this.clusterName = clusterName;
+        this.languages = languages.split(",");
+        this.transportAddresses = transportAddresses;
+    }
 
     public CustomServer start() {
         try {
@@ -169,5 +175,11 @@ public class CustomServer {
     public CustomServer setMaxShards(int shards) {
         this.shards = shards;
         return this;
+    }
+
+    public void shutdown() {
+        if (esClient != null) {
+            esClient.close();
+        }
     }
 }
